@@ -1,3 +1,5 @@
+package self.chera.annotations;
+
 import com.google.auto.service.AutoService;
 
 import javax.annotation.processing.*;
@@ -12,7 +14,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 // doing this tutorial: https://www.baeldung.com/java-annotation-processing-builder
-@SupportedAnnotationTypes("BuilderProperty")
+@SupportedAnnotationTypes("self.chera.annotations.BuilderProperty")
 @SupportedSourceVersion(SourceVersion.RELEASE_11)
 @AutoService(Processor.class)
 public class BuilderProcessor extends AbstractProcessor {
@@ -26,7 +28,7 @@ public class BuilderProcessor extends AbstractProcessor {
 
             var wronglyAnnotatedMethods = annotatedMethods.get(false);
             wronglyAnnotatedMethods.forEach(mistake -> processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
-                    "@BuilderProperty must be applied to a set<Something> method " + "with a single argument",
+                    "@self.chera.annotations.BuilderProperty must be applied to a set<Something> method " + "with a single argument",
                     mistake));
 
             var setters = annotatedMethods.get(true);
