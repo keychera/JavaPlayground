@@ -1,6 +1,8 @@
 package self.chera.annotations;
 
 import com.google.auto.service.AutoService;
+import org.jboss.forge.roaster.Roaster;
+import org.jboss.forge.roaster.model.source.JavaClassSource;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
@@ -47,7 +49,7 @@ public class BuilderProcessor extends AbstractProcessor {
         return true;
     }
 
-    private void writeBuilderFile(String className, Map<String, String> setterMap) throws IOException {
+    private void writeBuilderFile(String className, Map<String, String> setterNamesToArgumentType) throws IOException {
 
         String packageName = null;
         int lastDot = className.lastIndexOf('.');
@@ -61,54 +63,18 @@ public class BuilderProcessor extends AbstractProcessor {
 
         var builderFile = processingEnv.getFiler().createSourceFile(builderClassName);
 
+        final var builderClass = Roaster.create(JavaClassSource.class);
+        builderClass.setPackage(packageName).setName(builderSimpleClassName).setPublic()
+                .addField().setPrivate().setType(simpleClassName).setName("object").setLiteralInitializer("new " + simpleClassName + "();").getOrigin() // object holder
+                .addMethod().setPublic().setReturnType(simpleClassName).setName("build").setBody("return object;"); // build()
+
+        setterNamesToArgumentType.forEach((setterName, argumentType) -> builderClass // every setter method
+                .addMethod().setPublic().setReturnType(builderSimpleClassName).setName(setterName)
+                .setBody(String.format("object.%s(value);return this;", setterName))
+                .addParameter(argumentType, "value"));
+
         try (var out = new PrintWriter(builderFile.openWriter())) {
-
-            if (packageName != null) {
-                out.print("package ");
-                out.print(packageName);
-                out.println(";");
-                out.println();
-            }
-
-            out.print("public class ");
-            out.print(builderSimpleClassName);
-            out.println(" {");
-            out.println();
-
-            out.print("    private ");
-            out.print(simpleClassName);
-            out.print(" object = new ");
-            out.print(simpleClassName);
-            out.println("();");
-            out.println();
-
-            out.print("    public ");
-            out.print(simpleClassName);
-            out.println(" build() {");
-            out.println("        return object;");
-            out.println("    }");
-            out.println();
-
-            setterMap.forEach((methodName, argumentType) -> {
-
-                out.print("    public ");
-                out.print(builderSimpleClassName);
-                out.print(" ");
-                out.print(methodName);
-
-                out.print("(");
-
-                out.print(argumentType);
-                out.println(" value) {");
-                out.print("        object.");
-                out.print(methodName);
-                out.println("(value);");
-                out.println("        return this;");
-                out.println("    }");
-                out.println();
-            });
-
-            out.println("}");
+            out.print(builderClass);
         }
     }
 }
