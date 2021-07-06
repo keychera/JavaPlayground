@@ -16,6 +16,7 @@
         <maven.compiler.target>16</maven.compiler.target>
         <auto-service.version>1.0-rc2</auto-service.version>
         <roaster.version>2.22.2.Final</roaster.version>
+        <lombok.version>1.18.20</lombok.version>
     </properties>
 
     <dependencies>
@@ -36,6 +37,13 @@
             <groupId>org.jboss.forge.roaster</groupId>
             <artifactId>roaster-jdt</artifactId>
             <version>${roaster.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>
